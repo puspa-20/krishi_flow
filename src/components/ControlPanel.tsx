@@ -67,7 +67,7 @@ export const ControlPanel: React.FC = () => {
     }
   };
 
-  const sections = ['North Field', 'South Field', 'East Field', 'West Field'];
+  const sections = ['FieldA', 'FieldB', 'FieldC', 'FieldD'];
 
   return (
     <Card>
@@ -130,7 +130,7 @@ export const ControlPanel: React.FC = () => {
                   max={100}
                   min={10}
                   step={5}
-                  className="w-full"
+                  className="w-full "
                   disabled={!isAutoMode}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -146,8 +146,8 @@ export const ControlPanel: React.FC = () => {
                   });
                 }}
                 disabled={!isAutoMode}
-                className="w-full"
-              >
+          className="w-full bg-green-800 hover:bg-green-900 text-white"
+                      >
                 Update Settings
               </Button>
             </div>
@@ -179,7 +179,7 @@ export const ControlPanel: React.FC = () => {
                   className="w-full"
                   variant="outline"
                 >
-                  🚗 Move Car to North Field
+                  🚗 Move Car to Field A
                 </Button>
                 <Button
                   onClick={() => handleManualCommand('collect_samples', 'Smart Car')}

@@ -42,28 +42,28 @@ export const ChartSection: React.FC<ChartSectionProps> = ({ sections }) => {
           minute: '2-digit' 
         }),
         timestamp,
-        'North Field': {
+        'Field A': {
           pH: 6.8 + Math.sin(hour * Math.PI / 12) * 0.3 + (Math.random() - 0.5) * 0.2,
           soilMoisture: 45 + Math.cos(hour * Math.PI / 12) * 10 + (Math.random() - 0.5) * 5,
           temperature: 24.5 + Math.sin((hour - 6) * Math.PI / 12) * 5 + (Math.random() - 0.5) * 2,
           humidity: 62 - Math.sin((hour - 6) * Math.PI / 12) * 15 + (Math.random() - 0.5) * 3,
           gasConcentration: 0.3 + (Math.random() - 0.5) * 0.1
         },
-        'South Field': {
+        'Field B': {
           pH: 7.2 + Math.sin(hour * Math.PI / 12) * 0.2 + (Math.random() - 0.5) * 0.15,
           soilMoisture: 38 + Math.cos(hour * Math.PI / 12) * 8 + (Math.random() - 0.5) * 4,
           temperature: 26.1 + Math.sin((hour - 6) * Math.PI / 12) * 4 + (Math.random() - 0.5) * 1.5,
           humidity: 58 - Math.sin((hour - 6) * Math.PI / 12) * 12 + (Math.random() - 0.5) * 2.5,
           gasConcentration: 0.25 + (Math.random() - 0.5) * 0.08
         },
-        'East Field': {
+        'Field C': {
           pH: 6.5 + Math.sin(hour * Math.PI / 12) * 0.25 + (Math.random() - 0.5) * 0.18,
           soilMoisture: 52 + Math.cos(hour * Math.PI / 12) * 12 + (Math.random() - 0.5) * 6,
           temperature: 23.8 + Math.sin((hour - 6) * Math.PI / 12) * 4.5 + (Math.random() - 0.5) * 1.8,
           humidity: 65 - Math.sin((hour - 6) * Math.PI / 12) * 18 + (Math.random() - 0.5) * 3.2,
           gasConcentration: 0.4 + (Math.random() - 0.5) * 0.12
         },
-        'West Field': {
+        'Field D': {
           pH: 7.0 + Math.sin(hour * Math.PI / 12) * 0.28 + (Math.random() - 0.5) * 0.22,
           soilMoisture: 28 + Math.cos(hour * Math.PI / 12) * 15 + (Math.random() - 0.5) * 7,
           temperature: 25.3 + Math.sin((hour - 6) * Math.PI / 12) * 5.5 + (Math.random() - 0.5) * 2.2,
@@ -81,18 +81,18 @@ export const ChartSection: React.FC<ChartSectionProps> = ({ sections }) => {
   const formatChartData = (parameter: keyof SensorData) => {
     return historicalData.map(point => ({
       time: point.time,
-      'North Field': point['North Field'][parameter],
-      'South Field': point['South Field'][parameter],
-      'East Field': point['East Field'][parameter],
-      'West Field': point['West Field'][parameter]
+      'Field A': point['Field A'][parameter],
+      'Field B': point['Field B'][parameter],
+      'Field C': point['Field C'][parameter],
+      'Field D': point['Field D'][parameter]
     }));
   };
 
   const chartColors = {
-    'North Field': '#10b981',
-    'South Field': '#3b82f6',
-    'East Field': '#f59e0b',
-    'West Field': '#ef4444'
+    'Field A': '#10b981',
+    'Field B': '#3b82f6',
+    'Field C': '#f59e0b',
+    'Field D': '#ef4444'
   };
 
   const renderChart = (parameter: keyof SensorData, title: string, unit: string) => {

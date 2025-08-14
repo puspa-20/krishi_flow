@@ -1,10 +1,80 @@
-
+require('dotenv').config(); // Load .env variables
+console.log('📦 mqtt.js loaded');
 const mqtt = require('mqtt');
-const firebase = require('./firebase');
+const firebase = require('./firebase.js');
 const logger = require('./utils/logger');
 const { validateSensorData, processVegetationRecommendation } = require('./utils/dataProcessor');
 
 class MQTTClient {
+constructor() {
+  logger.info('🔧 MQTTClient constructor called');
+  logger.info('🧪 MQTT_BROKER_URL is:', process.env.MQTT_BROKER_URL);
+
+
+  this.client = null;
+  this.isConnected = false;
+  this.reconnectAttempts = 0;
+  this.maxReconnectAttempts = 10;
+  this.reconnectDelay = 5000;
+
+  this.topics = {
+    sensorData: process.env.MQTT_TOPIC_SENSOR_DATA || 'agri/irrigation/data',
+    carControl: process.env.MQTT_TOPIC_CAR_CONTROL || 'agri/car/control',
+    systemStatus: process.env.MQTT_TOPIC_SYSTEM_STATUS || 'agri/system/status'
+  };
+
+  this.init();
+}
+
+
+
+
+init() {
+  logger.log('🚀 Initializing MQTT connection...');
+
+  const options = {
+    clientId: process.env.MQTT_CLIENT_ID || `ecosmart_garden_${Date.now()}`,
+    clean: true,
+    reconnectPeriod: this.reconnectDelay,
+    connectTimeout: 30000,
+    will: {
+      topic: this.topics.systemStatus,
+      payload: JSON.stringify({
+        status: 'offline',
+        timestamp: Date.now(),
+        reason: 'unexpected_disconnect'
+      }),
+      qos: 1,
+      retain: true
+    }
+  };
+
+  logger.log('📡 MQTT options:', options);
+  logger.log('🔗 Connecting to broker:', process.env.MQTT_BROKER_URL);
+
+  try {
+  logger.info('📡 Trying to connect to MQTT broker at: ' + process.env.MQTT_BROKER_URL);
+  
+  this.client = mqtt.connect(process.env.MQTT_BROKER_URL, options);
+console.log('🚀 MQTT connect() called');
+logger.info('✅ MQTT client created');
+
+
+  this.client.on('error', (err) => {
+    logger.error('❌ MQTT connection failed:', err.message);
+    console.error('❌ MQTT Error:', err);
+  });
+
+} catch (err) {
+  logger.error('❌ Error creating MQTT client:', err);
+  console.error('❌ MQTT Client Exception:', err); 
+}
+
+
+  this.setupEventHandlers();
+}
+
+  /*
   constructor() {
     this.client = null;
     this.isConnected = false;
@@ -46,6 +116,7 @@ class MQTTClient {
     
     this.setupEventHandlers();
   }
+  */
 
   setupEventHandlers() {
     this.client.on('connect', () => {
@@ -61,11 +132,27 @@ class MQTTClient {
           logger.info(`📡 Subscribed to ${this.topics.sensorData}`);
         }
       });
+      
+          // Add this log
+    logger.info('📡 setupEventHandlers executed');
+    
+    this.publishSystemStatus('online', 'connected_successfully');
+  
 
       // Publish system online status
       this.publishSystemStatus('online', 'connected_successfully');
     });
-
+const message = JSON.stringify({
+        sectionId: "section2",
+        timestamp: Date.now(),
+        sensors: {
+          pH: 7,
+          soilMoisture: 70,
+          temperature: 26,
+          humidity: 60,
+          gasConcentration: 0.2,
+        },
+      });
     this.client.on('message', async (topic, message) => {
       try {
         await this.handleMessage(topic, message);

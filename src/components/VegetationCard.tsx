@@ -77,17 +77,7 @@ export const VegetationCard: React.FC<VegetationCardProps> = ({
 
   const vegetationEmojis: { [key: string]: string } = {
     'Tomatoes': '🍅',
-    'Peppers': '🌶️',
-    'Cucumbers': '🥒',
-    'Lettuce': '🥬',
-    'Spinach': '🥬',
-    'Herbs': '🌿',
-    'Carrots': '🥕',
-    'Radishes': '🥕',
-    'Onions': '🧅',
-    'Beans': '🫘',
-    'Peas': '🟢',
-    'Corn': '🌽'
+    
   };
 
   return (
@@ -112,7 +102,7 @@ export const VegetationCard: React.FC<VegetationCardProps> = ({
                   className="flex items-center justify-between p-2 bg-green-50 rounded-lg border border-green-200"
                 >
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg">{vegetationEmojis[plant] || '🌱'}</span>
+                    <span className="text-lg">{vegetationEmojis[plant] || '🍅'}</span>
                     <span className="font-medium text-green-800">{plant}</span>
                   </div>
                   <Badge className="bg-green-100 text-green-700 text-xs">

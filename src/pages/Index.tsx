@@ -31,7 +31,7 @@ const Index = () => {
   const [sections, setSections] = useState<Section[]>([
     {
       id: 'section-1',
-      name: 'North Field',
+      name: 'Field A',
       sensorData: {
         pH: 6.8,
         soilMoisture: 45,
@@ -40,13 +40,13 @@ const Index = () => {
         gasConcentration: 0.3,
         timestamp: Date.now()
       },
-      recommendedVegetation: ['Tomatoes', 'Peppers', 'Cucumbers'],
+      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
       lastUpdated: '2 min ago',
       status: 'online'
     },
     {
       id: 'section-2',
-      name: 'South Field',
+      name: 'Field B',
       sensorData: {
         pH: 7.2,
         soilMoisture: 38,
@@ -55,13 +55,13 @@ const Index = () => {
         gasConcentration: 0.25,
         timestamp: Date.now()
       },
-      recommendedVegetation: ['Lettuce', 'Spinach', 'Herbs'],
+      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
       lastUpdated: '1 min ago',
       status: 'online'
     },
     {
       id: 'section-3',
-      name: 'East Field',
+      name: 'Field C',
       sensorData: {
         pH: 6.5,
         soilMoisture: 52,
@@ -70,13 +70,13 @@ const Index = () => {
         gasConcentration: 0.4,
         timestamp: Date.now()
       },
-      recommendedVegetation: ['Carrots', 'Radishes', 'Onions'],
+      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
       lastUpdated: '3 min ago',
       status: 'warning'
     },
     {
       id: 'section-4',
-      name: 'West Field',
+      name: 'Field D',
       sensorData: {
         pH: 7.0,
         soilMoisture: 28,
@@ -85,7 +85,7 @@ const Index = () => {
         gasConcentration: 0.2,
         timestamp: Date.now()
       },
-      recommendedVegetation: ['Beans', 'Peas', 'Corn'],
+      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
       lastUpdated: '5 min ago',
       status: 'offline'
     }
@@ -93,28 +93,29 @@ const Index = () => {
 
   const [isConnected, setIsConnected] = useState(true);
 
-  // Simulate real-time data updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSections(prevSections => 
-        prevSections.map(section => ({
-          ...section,
-          sensorData: {
-            ...section.sensorData,
-            pH: Math.max(5.5, Math.min(8.5, section.sensorData.pH + (Math.random() - 0.5) * 0.2)),
-            soilMoisture: Math.max(0, Math.min(100, section.sensorData.soilMoisture + (Math.random() - 0.5) * 5)),
-            temperature: Math.max(15, Math.min(35, section.sensorData.temperature + (Math.random() - 0.5) * 2)),
-            humidity: Math.max(30, Math.min(90, section.sensorData.humidity + (Math.random() - 0.5) * 3)),
-            gasConcentration: Math.max(0, Math.min(1, section.sensorData.gasConcentration + (Math.random() - 0.5) * 0.1)),
-            timestamp: Date.now()
-          },
-          lastUpdated: 'Just now'
-        }))
-      );
-    }, 5000);
+  // Simulate hourly real-time data updates
+useEffect(() => {
+  const interval = setInterval(() => {
+    setSections(prevSections => 
+      prevSections.map(section => ({
+        ...section,
+        sensorData: {
+          ...section.sensorData,
+          pH: Math.max(5.5, Math.min(8.5, section.sensorData.pH + (Math.random() - 0.5) * 0.2)),
+          soilMoisture: Math.max(0, Math.min(100, section.sensorData.soilMoisture + (Math.random() - 0.5) * 5)),
+          temperature: Math.max(15, Math.min(35, section.sensorData.temperature + (Math.random() - 0.5) * 2)),
+          humidity: Math.max(30, Math.min(90, section.sensorData.humidity + (Math.random() - 0.5) * 3)),
+          gasConcentration: Math.max(0, Math.min(1, section.sensorData.gasConcentration + (Math.random() - 0.5) * 0.1)),
+          timestamp: Date.now()
+        },
+        lastUpdated: 'Just now'
+      }))
+    );
+  }, 60 * 60 * 1000); // 1 hour in milliseconds
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []);
+
 
   // Simulate connection status
   useEffect(() => {
@@ -122,13 +123,13 @@ const Index = () => {
       const newConnectionStatus = Math.random() > 0.1; // 90% uptime
       if (newConnectionStatus !== isConnected) {
         setIsConnected(newConnectionStatus);
-        toast({
-          title: newConnectionStatus ? "Connected" : "Connection Lost",
-          description: newConnectionStatus 
-            ? "Successfully reconnected to IoT network" 
-            : "Lost connection to MQTT broker",
-          variant: newConnectionStatus ? "default" : "destructive"
-        });
+        // toast({
+        //   title: newConnectionStatus ? "Connected" : "Connection Lost",
+        //   description: newConnectionStatus 
+        //     ? "Successfully reconnected to IoT network" 
+        //     : "Lost connection to MQTT broker",
+        //   variant: newConnectionStatus ? "default" : "destructive"
+        // });
       }
     }, 10000);
 
@@ -145,18 +146,19 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+<div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<header className="bg-white-100 shadow-sm border-b border-yellow-300">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">🌱</span>
-              </div>
+              <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+    <img src="/assets/logo.png" alt="" className="w-full h-full object-cover" />
+  </div>
+
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">EcoSmart Garden Hub</h1>
-                <p className="text-gray-600">IoT Agricultural Monitoring System</p>
+                <h1 className="text-2xl font-bold text-green-900">Krishi-Flow</h1>
+<p className="text-gray-600 font-serif">Nourish With Knowledge</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
