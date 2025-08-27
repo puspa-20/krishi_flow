@@ -1,8 +1,9 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { database } from '@/firebase';
+import { ref, onValue } from 'firebase/database';
 
 interface SensorData {
   pH: number;
@@ -27,64 +28,37 @@ interface ChartSectionProps {
 }
 
 export const ChartSection: React.FC<ChartSectionProps> = ({ sections }) => {
-  // Generate historical data for demonstration
-  const generateHistoricalData = () => {
-    const data = [];
-    const now = Date.now();
-    
-    for (let i = 23; i >= 0; i--) {
-      const timestamp = now - (i * 60 * 60 * 1000); // Last 24 hours
-      const hour = new Date(timestamp).getHours();
-      
-      data.push({
-        time: new Date(timestamp).toLocaleTimeString('en-US', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        timestamp,
-        'Field A': {
-          pH: 6.8 + Math.sin(hour * Math.PI / 12) * 0.3 + (Math.random() - 0.5) * 0.2,
-          soilMoisture: 45 + Math.cos(hour * Math.PI / 12) * 10 + (Math.random() - 0.5) * 5,
-          temperature: 24.5 + Math.sin((hour - 6) * Math.PI / 12) * 5 + (Math.random() - 0.5) * 2,
-          humidity: 62 - Math.sin((hour - 6) * Math.PI / 12) * 15 + (Math.random() - 0.5) * 3,
-          gasConcentration: 0.3 + (Math.random() - 0.5) * 0.1
-        },
-        'Field B': {
-          pH: 7.2 + Math.sin(hour * Math.PI / 12) * 0.2 + (Math.random() - 0.5) * 0.15,
-          soilMoisture: 38 + Math.cos(hour * Math.PI / 12) * 8 + (Math.random() - 0.5) * 4,
-          temperature: 26.1 + Math.sin((hour - 6) * Math.PI / 12) * 4 + (Math.random() - 0.5) * 1.5,
-          humidity: 58 - Math.sin((hour - 6) * Math.PI / 12) * 12 + (Math.random() - 0.5) * 2.5,
-          gasConcentration: 0.25 + (Math.random() - 0.5) * 0.08
-        },
-        'Field C': {
-          pH: 6.5 + Math.sin(hour * Math.PI / 12) * 0.25 + (Math.random() - 0.5) * 0.18,
-          soilMoisture: 52 + Math.cos(hour * Math.PI / 12) * 12 + (Math.random() - 0.5) * 6,
-          temperature: 23.8 + Math.sin((hour - 6) * Math.PI / 12) * 4.5 + (Math.random() - 0.5) * 1.8,
-          humidity: 65 - Math.sin((hour - 6) * Math.PI / 12) * 18 + (Math.random() - 0.5) * 3.2,
-          gasConcentration: 0.4 + (Math.random() - 0.5) * 0.12
-        },
-        'Field D': {
-          pH: 7.0 + Math.sin(hour * Math.PI / 12) * 0.28 + (Math.random() - 0.5) * 0.22,
-          soilMoisture: 28 + Math.cos(hour * Math.PI / 12) * 15 + (Math.random() - 0.5) * 7,
-          temperature: 25.3 + Math.sin((hour - 6) * Math.PI / 12) * 5.5 + (Math.random() - 0.5) * 2.2,
-          humidity: 55 - Math.sin((hour - 6) * Math.PI / 12) * 20 + (Math.random() - 0.5) * 4,
-          gasConcentration: 0.2 + (Math.random() - 0.5) * 0.06
-        }
-      });
-    }
-    
-    return data;
-  };
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
 
-  const historicalData = generateHistoricalData();
+  // Fetch real-time data from Firebase
+  useEffect(() => {
+    const sensorRef = ref(database, 'sensors'); // Your Firebase DB path
+
+    const unsubscribe = onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const formattedData = Object.keys(data)
+          .map(timestamp => ({
+            time: new Date(Number(timestamp)).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            ...data[timestamp] // assumes each timestamp has { "Field A": {...}, "Field B": {...} }
+          }))
+          // Optional: Only keep last 24 hours
+          .filter(point => Number(point.time) >= Date.now() - 24 * 60 * 60 * 1000);
+
+        setHistoricalData(formattedData);
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup on unmount
+  }, []);
 
   const formatChartData = (parameter: keyof SensorData) => {
     return historicalData.map(point => ({
       time: point.time,
-      'Field A': point['Field A'][parameter],
-      'Field B': point['Field B'][parameter],
-      'Field C': point['Field C'][parameter],
-      'Field D': point['Field D'][parameter]
+      'Field A': point['Field A']?.[parameter],
+      'Field B': point['Field B']?.[parameter],
+      'Field C': point['Field C']?.[parameter],
+      'Field D': point['Field D']?.[parameter],
     }));
   };
 
@@ -97,7 +71,7 @@ export const ChartSection: React.FC<ChartSectionProps> = ({ sections }) => {
 
   const renderChart = (parameter: keyof SensorData, title: string, unit: string) => {
     const data = formatChartData(parameter);
-    
+
     return (
       <Card>
         <CardHeader>
@@ -107,18 +81,11 @@ export const ChartSection: React.FC<ChartSectionProps> = ({ sections }) => {
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="time" 
-                tick={{ fontSize: 12 }}
-                interval="preserveStartEnd"
-              />
+              <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
+              <Tooltip
                 labelFormatter={(label) => `Time: ${label}`}
-                formatter={(value: number, name: string) => [
-                  `${value.toFixed(2)}${unit}`, 
-                  name
-                ]}
+                formatter={(value: number, name: string) => [`${value?.toFixed(2)}${unit}`, name]}
               />
               <Legend />
               {sections.map((section) => (
