@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +6,9 @@ import { VegetationCard } from '@/components/VegetationCard';
 import { ChartSection } from '@/components/ChartSection';
 import { ControlPanel } from '@/components/ControlPanel';
 import { toast } from '@/hooks/use-toast';
+import { ref, onValue } from "firebase/database";
+import { db } from "@/firebaseConfig";  // adjust path
 
-// Simulated sensor data interface
 interface SensorData {
   pH: number;
   soilMoisture: number;
@@ -28,92 +28,28 @@ interface Section {
 }
 
 const Index = () => {
-  const [sections, setSections] = useState<Section[]>([
-    {
-      id: 'section-1',
-      name: 'Field A',
-      sensorData: {
-        pH: 6.8,
-        soilMoisture: 45,
-        temperature: 24.5,
-        humidity: 62,
-        gasConcentration: 0.3,
-        timestamp: Date.now()
-      },
-      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
-      lastUpdated: '2 min ago',
-      status: 'online'
-    },
-    {
-      id: 'section-2',
-      name: 'Field B',
-      sensorData: {
-        pH: 7.2,
-        soilMoisture: 38,
-        temperature: 26.1,
-        humidity: 58,
-        gasConcentration: 0.25,
-        timestamp: Date.now()
-      },
-      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
-      lastUpdated: '1 min ago',
-      status: 'online'
-    },
-    {
-      id: 'section-3',
-      name: 'Field C',
-      sensorData: {
-        pH: 6.5,
-        soilMoisture: 52,
-        temperature: 23.8,
-        humidity: 65,
-        gasConcentration: 0.4,
-        timestamp: Date.now()
-      },
-      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
-      lastUpdated: '3 min ago',
-      status: 'warning'
-    },
-    {
-      id: 'section-4',
-      name: 'Field D',
-      sensorData: {
-        pH: 7.0,
-        soilMoisture: 28,
-        temperature: 25.3,
-        humidity: 55,
-        gasConcentration: 0.2,
-        timestamp: Date.now()
-      },
-      recommendedVegetation: ['tomato', 'tomato', 'tomato'],
-      lastUpdated: '5 min ago',
-      status: 'offline'
-    }
-  ]);
-
+  const [sections, setSections] = useState<Section[]>([]);
   const [isConnected, setIsConnected] = useState(true);
 
-  // Simulate hourly real-time data updates
-useEffect(() => {
-  const interval = setInterval(() => {
-    setSections(prevSections => 
-      prevSections.map(section => ({
-        ...section,
-        sensorData: {
-          ...section.sensorData,
-          pH: Math.max(5.5, Math.min(8.5, section.sensorData.pH + (Math.random() - 0.5) * 0.2)),
-          soilMoisture: Math.max(0, Math.min(100, section.sensorData.soilMoisture + (Math.random() - 0.5) * 5)),
-          temperature: Math.max(15, Math.min(35, section.sensorData.temperature + (Math.random() - 0.5) * 2)),
-          humidity: Math.max(30, Math.min(90, section.sensorData.humidity + (Math.random() - 0.5) * 3)),
-          gasConcentration: Math.max(0, Math.min(1, section.sensorData.gasConcentration + (Math.random() - 0.5) * 0.1)),
-          timestamp: Date.now()
-        },
-        lastUpdated: 'Just now'
-      }))
-    );
-  }, 60 * 60 * 1000); // 1 hour in milliseconds
+  useEffect(() => {
+    const sectionsRef = ref(db, "sections");
+    const unsubscribe = onValue(sectionsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const formattedSections = Object.keys(data).map((key) => ({
+          id: key,
+          status: data[key].status ?? "online", // 
+          ...data[key],
+        }));
+        setSections(formattedSections);
+      } else {
+        console.log("No data available");
+      }
+    });
 
-  return () => clearInterval(interval);
+    return () => unsubscribe();
+  }, []);
+// cleanup listener on unmount
 }, []);
 
 
